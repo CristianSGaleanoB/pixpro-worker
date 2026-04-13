@@ -31,3 +31,43 @@ To ensure the separation of concerns, the layers interact as follows:
    - Finally, it uses the **Infrastructure** clients to store the image URLs in the Database and publish a "task completed" event back to RabbitMQ.
 
 By isolating the business logic in `services` and the algorithms in `core`, we can easily mock external dependencies in the `infrastructure` layer to write fast, reliable unit tests.
+
+---
+
+## Setup and Installation
+
+We use the native Python toolchain (`venv`, `pip`, and `setuptools`) to manage dependencies and avoid heavy third-party package managers.
+
+### 1. Create the Virtual Environment
+To maintain dependencies isolated, create a virtual environment in the root folder:
+
+```bash
+python -m venv venv
+```
+
+### 2. Activate the Environment
+Depending on your operative system, run the respective command:
+
+**Windows (PowerShell):**
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+*(If you use Command Prompt, run `.\venv\Scripts\activate.bat`)*
+
+**macOS / Linux:**
+```bash
+source venv/bin/activate
+```
+
+### 3. Install the Dependencies
+Since our dependencies are explicitly declared in the `pyproject.toml`, you can install the project and its requirements natively with `pip`. 
+
+It is recommended to install it in "editable mode" (`-e`) during development:
+
+```bash
+pip install -e .
+```
+
+After this, MediaPipe and any other necessary dependencies will be ready to use
+
+---
