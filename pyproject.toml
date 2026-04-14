@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=69.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "digester-worker"
+version = "0.1.0"
+description = "Worker service for processing images with MediaPipe"
+requires-python = ">=3.12"
+dependencies = [
+    "mediapipe>=0.10.30"
+]
