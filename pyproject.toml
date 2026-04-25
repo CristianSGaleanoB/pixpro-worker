@@ -10,7 +10,8 @@ requires-python = ">=3.12"
 dependencies = [
     "mediapipe>=0.10.30",
     "aio-pika>=9.4.0",
-    "pydantic>=2.7.0"
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.2.0"
 ]
 
 [project.optional-dependencies]
@@ -24,3 +25,7 @@ digester-worker = "src.main:run"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

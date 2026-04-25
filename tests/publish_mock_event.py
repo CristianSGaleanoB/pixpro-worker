@@ -2,23 +2,21 @@ import asyncio
 import aio_pika
 import json
 import logging
+from src.core.config import settings
 from uuid import uuid4
 
 # Setup basic logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-AMQP_URL = "amqp://guest:guest@localhost:5672/"
-QUEUE_NAME = "image_upload_events"
-
 async def main():
-    connection = await aio_pika.connect_robust(AMQP_URL)
+    connection = await aio_pika.connect_robust(settings.amqp_url)
     
     async with connection:
         channel = await connection.channel()
         
         # Declare the queue just in case it doesn't exist yet
-        await channel.declare_queue(QUEUE_NAME, durable=True)
+        await channel.declare_queue(settings.queue_name, durable=True)
         
         # Build the payload matching our Pydantic model
         payload = {
@@ -42,10 +40,10 @@ async def main():
             delivery_mode=aio_pika.DeliveryMode.PERSISTENT
         )
         
-        logger.info(f"Publishing mock ImageUploadedEvent to queue '{QUEUE_NAME}'...")
+        logger.info(f"Publishing mock ImageUploadedEvent to queue '{settings.queue_name}'...")
         await channel.default_exchange.publish(
             message,
-            routing_key=QUEUE_NAME
+            routing_key=settings.queue_name
         )
         logger.info("Message published successfully.")
 

@@ -12,6 +12,7 @@ from src.core.processor import MediaPipeProcessorMock
 from src.infrastructure.storage.cdn import CDNStorageMock
 from src.infrastructure.database.mongo import MongoDBRepositoryMock
 from src.infrastructure.notifications.websocket import WebSocketNotifierMock
+from src.core.config import settings
 
 # Basic logging setup
 logging.basicConfig(
@@ -22,15 +23,11 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-# Defaults (could come from environment variables)
-AMQP_URL = "amqp://guest:guest@localhost:5672/"
-QUEUE_NAME = "image_upload_events"
-
 async def main():
     logger.info("Starting Digester Worker")
     
     # 1. Establish RabbitMQ Connection
-    connection = RabbitMQConnection(amqp_url=AMQP_URL)
+    connection = RabbitMQConnection(amqp_url=settings.amqp_url)
     await connection.connect()
 
     # 2. Instantiate infrastructure mocks
@@ -53,7 +50,7 @@ async def main():
     # 5. Create consumer and inject dependencies
     consumer = RabbitMQConsumer(
         connection=connection,
-        queue_name=QUEUE_NAME,
+        queue_name=settings.queue_name,
         strategy=handler
     )
 
