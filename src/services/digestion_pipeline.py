@@ -1,0 +1,91 @@
+import logging
+from src.core.events import ImageUploadedEvent, ImageProcessedEvent
+from src.core.interfaces import (
+    ImageProcessingService,
+    StorageService,
+    DatabaseRepository,
+    NotificationService
+)
+
+logger = logging.getLogger(__name__)
+
+class DigestionPipeline:
+    def __init__(
+        self,
+        processor: ImageProcessingService,
+        storage: StorageService,
+        database: DatabaseRepository,
+        notifier: NotificationService
+    ):
+        self.processor = processor
+        self.storage = storage
+        self.database = database
+        self.notifier = notifier
+
+    async def execute(self, event: ImageUploadedEvent) -> ImageProcessedEvent:
+        """
+        Orchestrates the image digestion process.
+        """
+        try:
+            # 1. Notify start
+            await self.notifier.notify_status(
+                user_id=event.userId,
+                image_id=event.imageId,
+                status="PROCESSING_STARTED",
+                message="Your image has been picked up by a worker and is now processing."
+            )
+
+            # 2. Download original image
+            logger.info(f"Downloading image {event.imageId} from {event.storagePath}")
+            raw_image_data = await self.storage.download_image(event.storagePath)
+
+            # 3. Process image with MediaPipe
+            logger.info("Starting MediaPipe processing pipeline...")
+            processed_bytes, metadata = await self.processor.process_image(
+                raw_image_data=raw_image_data,
+                options=event.processingOptions
+            )
+
+            # 4. Upload processed image to CDN
+            logger.info("Uploading processed image to CDN...")
+            result_url = await self.storage.upload_image(
+                image_id=event.imageId,
+                image_data=processed_bytes
+            )
+
+            # 5. Save metadata to DB
+            logger.info("Saving metadata to MongoDB...")
+            await self.database.save_image_metadata(
+                image_id=event.imageId,
+                project_id=event.projectId,
+                result_url=result_url,
+                metadata=metadata
+            )
+
+            # 6. Notify success
+            await self.notifier.notify_status(
+                user_id=event.userId,
+                image_id=event.imageId,
+                status="PROCESSING_COMPLETED",
+                message="Image processing completed successfully!"
+            )
+            
+            # Construct and return the outgoing event
+            return ImageProcessedEvent(
+                correlationId=event.correlationId,
+                imageId=event.imageId,
+                projectId=event.projectId,
+                userId=event.userId,
+                resultUrl=result_url,
+                metadata=metadata
+            )
+
+        except Exception as e:
+            logger.exception(f"Pipeline failed for image {event.imageId}")
+            await self.notifier.notify_status(
+                user_id=event.userId,
+                image_id=event.imageId,
+                status="PROCESSING_FAILED",
+                message=f"An error occurred: {str(e)}"
+            )
+            raise e
