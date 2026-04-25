@@ -17,11 +17,25 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
-    "pytest-asyncio>=0.23.0"
+    "pytest-asyncio>=0.23.0",
+    "black>=24.0.0",
+    "mypy>=1.10.0"
 ]
 
 [project.scripts]
 digester-worker = "src.main:run"
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+include = '\.pyi?$'
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

@@ -4,10 +4,11 @@ from src.core.interfaces import (
     ImageProcessingService,
     StorageService,
     DatabaseRepository,
-    NotificationService
+    NotificationService,
 )
 
 logger = logging.getLogger(__name__)
+
 
 class DigestionPipeline:
     def __init__(
@@ -15,7 +16,7 @@ class DigestionPipeline:
         processor: ImageProcessingService,
         storage: StorageService,
         database: DatabaseRepository,
-        notifier: NotificationService
+        notifier: NotificationService,
     ):
         self.processor = processor
         self.storage = storage
@@ -31,7 +32,7 @@ class DigestionPipeline:
                 user_id=event.userId,
                 image_id=event.imageId,
                 status="PROCESSING_STARTED",
-                message="Your image has been picked up by a worker and is now processing."
+                message="Your image has been picked up by a worker and is now processing.",
             )
 
             logger.info(f"Downloading image {event.imageId} from {event.storagePath}")
@@ -39,14 +40,12 @@ class DigestionPipeline:
 
             logger.info("Starting MediaPipe processing pipeline...")
             processed_bytes, metadata = await self.processor.process_image(
-                raw_image_data=raw_image_data,
-                options=event.processingOptions
+                raw_image_data=raw_image_data, options=event.processingOptions
             )
 
             logger.info("Uploading processed image to CDN...")
             result_url = await self.storage.upload_image(
-                image_id=event.imageId,
-                image_data=processed_bytes
+                image_id=event.imageId, image_data=processed_bytes
             )
 
             logger.info("Saving metadata to MongoDB...")
@@ -54,23 +53,23 @@ class DigestionPipeline:
                 image_id=event.imageId,
                 project_id=event.projectId,
                 result_url=result_url,
-                metadata=metadata
+                metadata=metadata,
             )
 
             await self.notifier.notify_status(
                 user_id=event.userId,
                 image_id=event.imageId,
                 status="PROCESSING_COMPLETED",
-                message="Image processing completed successfully!"
+                message="Image processing completed successfully!",
             )
-            
+
             return ImageProcessedEvent(
                 correlationId=event.correlationId,
                 imageId=event.imageId,
                 projectId=event.projectId,
                 userId=event.userId,
                 resultUrl=result_url,
-                metadata=metadata
+                metadata=metadata,
             )
 
         except Exception as e:
@@ -79,6 +78,6 @@ class DigestionPipeline:
                 user_id=event.userId,
                 image_id=event.imageId,
                 status="PROCESSING_FAILED",
-                message=f"An error occurred: {str(e)}"
+                message=f"An error occurred: {str(e)}",
             )
             raise e

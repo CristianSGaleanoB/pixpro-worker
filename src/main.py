@@ -11,17 +11,19 @@ from src.infrastructure.storage.cdn import CDNStorageMock
 from src.infrastructure.database.mongo import MongoDBRepositoryMock
 from src.infrastructure.notifications.websocket import WebSocketNotifierMock
 from src.core.config import settings
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)]
+    handlers=[logging.StreamHandler(sys.stdout)],
 )
 
 logger = logging.getLogger(__name__)
 
+
 async def main():
     logger.info("Starting Digester Worker")
-    
+
     connection = RabbitMQConnection(amqp_url=settings.amqp_url)
     await connection.connect()
 
@@ -31,18 +33,13 @@ async def main():
     notifier = WebSocketNotifierMock()
 
     pipeline = DigestionPipeline(
-        processor=processor,
-        storage=storage,
-        database=database,
-        notifier=notifier
+        processor=processor, storage=storage, database=database, notifier=notifier
     )
 
     handler = ImageUploadedHandler(pipeline=pipeline)
 
     consumer = RabbitMQConsumer(
-        connection=connection,
-        queue_name=settings.queue_name,
-        strategy=handler
+        connection=connection, queue_name=settings.queue_name, strategy=handler
     )
 
     try:
@@ -53,12 +50,14 @@ async def main():
         await connection.close()
         logger.info("Worker stopped.")
 
+
 def run():
     """Entry point for the CLI script defined in pyproject.toml"""
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         logger.info("Interrupted by user. Exiting.")
+
 
 if __name__ == "__main__":
     run()

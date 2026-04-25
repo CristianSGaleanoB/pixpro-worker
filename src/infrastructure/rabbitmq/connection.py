@@ -1,14 +1,16 @@
 import logging
 import aio_pika
+from aio_pika.abc import AbstractRobustConnection, AbstractChannel
 from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+
 class RabbitMQConnection:
     def __init__(self, amqp_url: str):
         self.amqp_url = amqp_url
-        self.connection: Optional[aio_pika.RobustConnection] = None
-        self.channel: Optional[aio_pika.RobustChannel] = None
+        self.connection: Optional[AbstractRobustConnection] = None
+        self.channel: Optional[AbstractChannel] = None
 
     async def connect(self) -> None:
         if not self.connection or self.connection.is_closed:
