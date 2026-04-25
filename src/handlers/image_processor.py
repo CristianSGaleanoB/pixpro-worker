@@ -18,12 +18,8 @@ class ImageUploadedHandler(EventHandlerStrategy):
     async def handle(self, event: ImageUploadedEvent) -> None:
         logger.info(f"Handling ImageUploadedEvent for Image ID: {event.imageId}")
         
-        # Delegate the entire business flow to the pipeline
         processed_event = await self.pipeline.execute(event)
         
         logger.info("Pipeline execution complete. Resulting event:")
         logger.info(processed_event.model_dump_json(indent=2))
-        
-        # Here we would publish `processed_event` to the next exchange/queue
-        # e.g., await self.publisher.publish(processed_event)
 

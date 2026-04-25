@@ -27,7 +27,6 @@ class DigestionPipeline:
         Orchestrates the image digestion process.
         """
         try:
-            # 1. Notify start
             await self.notifier.notify_status(
                 user_id=event.userId,
                 image_id=event.imageId,
@@ -35,25 +34,21 @@ class DigestionPipeline:
                 message="Your image has been picked up by a worker and is now processing."
             )
 
-            # 2. Download original image
             logger.info(f"Downloading image {event.imageId} from {event.storagePath}")
             raw_image_data = await self.storage.download_image(event.storagePath)
 
-            # 3. Process image with MediaPipe
             logger.info("Starting MediaPipe processing pipeline...")
             processed_bytes, metadata = await self.processor.process_image(
                 raw_image_data=raw_image_data,
                 options=event.processingOptions
             )
 
-            # 4. Upload processed image to CDN
             logger.info("Uploading processed image to CDN...")
             result_url = await self.storage.upload_image(
                 image_id=event.imageId,
                 image_data=processed_bytes
             )
 
-            # 5. Save metadata to DB
             logger.info("Saving metadata to MongoDB...")
             await self.database.save_image_metadata(
                 image_id=event.imageId,
@@ -62,7 +57,6 @@ class DigestionPipeline:
                 metadata=metadata
             )
 
-            # 6. Notify success
             await self.notifier.notify_status(
                 user_id=event.userId,
                 image_id=event.imageId,
@@ -70,7 +64,6 @@ class DigestionPipeline:
                 message="Image processing completed successfully!"
             )
             
-            # Construct and return the outgoing event
             return ImageProcessedEvent(
                 correlationId=event.correlationId,
                 imageId=event.imageId,

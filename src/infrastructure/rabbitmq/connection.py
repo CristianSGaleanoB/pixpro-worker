@@ -11,7 +11,6 @@ class RabbitMQConnection:
         self.channel: Optional[aio_pika.RobustChannel] = None
 
     async def connect(self) -> None:
-        """Establishes connection and channel to RabbitMQ."""
         if not self.connection or self.connection.is_closed:
             logger.info(f"Connecting to RabbitMQ at {self.amqp_url}")
             self.connection = await aio_pika.connect_robust(self.amqp_url)
@@ -19,7 +18,6 @@ class RabbitMQConnection:
             logger.info("Successfully connected to RabbitMQ")
 
     async def close(self) -> None:
-        """Closes the connection safely."""
         if self.connection and not self.connection.is_closed:
             logger.info("Closing RabbitMQ connection")
             await self.connection.close()

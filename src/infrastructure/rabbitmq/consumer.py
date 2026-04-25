@@ -18,18 +18,14 @@ class RabbitMQConsumer:
     async def _process_message(self, message: AbstractIncomingMessage) -> None:
         async with message.process(ignore_processed=True):
             try:
-                # Decode body
                 body = message.body.decode()
                 payload = json.loads(body)
                 
-                # Parse using the strategy's expected Pydantic model
                 event_model = self.strategy.event_type(**payload)
                 
-                # Delegate to the strategy
                 logger.info(f"Received valid event: {event_model.event} (Correlation ID: {event_model.correlationId})")
                 await self.strategy.handle(event_model)
                 
-                # Acknowledge message manually if all goes well
                 await message.ack()
 
             except json.JSONDecodeError:
@@ -40,7 +36,6 @@ class RabbitMQConsumer:
                 await message.reject(requeue=False)
             except Exception as e:
                 logger.exception(f"Unexpected error processing message: {e}")
-                # Requeue on unexpected error for retry mechanism (could be customized)
                 await message.nack(requeue=True)
 
     async def start_consuming(self) -> None:
@@ -48,13 +43,11 @@ class RabbitMQConsumer:
         if not self.connection.channel:
             raise RuntimeError("RabbitMQ connection is not established. Call connect() first.")
         
-        # Declare queue
         queue = await self.connection.channel.declare_queue(self.queue_name, durable=True)
         
         logger.info(f"Started consuming from queue '{self.queue_name}'")
         await queue.consume(self._process_message)
         
-        # Keep consumer running
         try:
             await asyncio.Future()
         except asyncio.CancelledError:

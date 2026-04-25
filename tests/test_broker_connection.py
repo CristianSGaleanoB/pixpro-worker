@@ -6,15 +6,10 @@ import aio_pika
 
 @pytest.mark.asyncio
 async def test_rabbitmq_connection_success():
-    """
-    Integration test: Verifies that the worker can successfully connect to the RabbitMQ broker.
-    This test will fail if RabbitMQ is stopped or unreachable.
-    """
     connection = RabbitMQConnection(amqp_url=settings.amqp_url)
     try:
         await asyncio.wait_for(connection.connect(), timeout=5.0)
         
-        # Verify connection and channel are open
         assert connection.connection is not None
         assert not connection.connection.is_closed
         assert connection.channel is not None

@@ -5,7 +5,6 @@ import logging
 from src.core.config import settings
 from uuid import uuid4
 
-# Setup basic logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -15,10 +14,8 @@ async def main():
     async with connection:
         channel = await connection.channel()
         
-        # Declare the queue just in case it doesn't exist yet
         await channel.declare_queue(settings.queue_name, durable=True)
         
-        # Build the payload matching our Pydantic model
         payload = {
             "event": "ImageUploaded",
             "version": "1.0",

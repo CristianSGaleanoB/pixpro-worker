@@ -32,11 +32,10 @@ class MediaPipeProcessorMock(ImageProcessingService):
             applied.append(f"watermark:{options.watermark}")
             
         metadata = ProcessingMetadata(
-            durationMs=2000, # Simulated fixed duration
+            durationMs=2000,
             appliedOptions=applied
         )
         
-        # In a real scenario, this would be the actual processed bytes
         processed_bytes = b"MOCK_PROCESSED_IMAGE_BYTES"
         
         return processed_bytes, metadata

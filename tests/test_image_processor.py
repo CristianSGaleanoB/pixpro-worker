@@ -12,7 +12,6 @@ async def test_image_uploaded_handler_processes_event(caplog):
     import logging
     caplog.set_level(logging.INFO)
     
-    # Prepare mock input
     options = ProcessingOptions(
         upscaler=True,
         grayscale=False,
@@ -28,7 +27,6 @@ async def test_image_uploaded_handler_processes_event(caplog):
         processingOptions=options
     )
     
-    # Instantiate mocks and pipeline
     pipeline = DigestionPipeline(
         processor=MediaPipeProcessorMock(),
         storage=CDNStorageMock(),
@@ -36,11 +34,9 @@ async def test_image_uploaded_handler_processes_event(caplog):
         notifier=WebSocketNotifierMock()
     )
     
-    # Run the handler
     handler = ImageUploadedHandler(pipeline=pipeline)
     await handler.handle(event)
     
-    # Assert logs contain the expected output from the pipeline execution
     assert "Handling ImageUploadedEvent for Image ID: image-789" in caplog.text
     assert "Downloading image image-789" in caplog.text
     assert "Applying AI upscaling... (mock)" in caplog.text
