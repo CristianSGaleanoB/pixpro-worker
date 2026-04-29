@@ -9,7 +9,7 @@ from src.services.digestion_pipeline import DigestionPipeline
 from src.core.processor import MediaPipeProcessorMock
 from src.infrastructure.storage.cdn import CDNStorageMock
 from src.infrastructure.database.mongo import MongoDBRepositoryMock
-from src.infrastructure.notifications.websocket import WebSocketNotifierMock
+from src.infrastructure.notifications.websocket import SocketIONotifier
 from src.core.config import settings
 
 logging.basicConfig(
@@ -24,16 +24,23 @@ logger = logging.getLogger(__name__)
 async def main():
     logger.info("Starting Digester Worker")
 
+    # Infrastructure
     connection = RabbitMQConnection(amqp_url=settings.amqp_url)
     await connection.connect()
+
+    notifier = SocketIONotifier()
+    await notifier.start()
 
     processor = MediaPipeProcessorMock()
     storage = CDNStorageMock()
     database = MongoDBRepositoryMock()
-    notifier = WebSocketNotifierMock()
 
+    # Domain pipeline
     pipeline = DigestionPipeline(
-        processor=processor, storage=storage, database=database, notifier=notifier
+        processor=processor,
+        storage=storage,
+        database=database,
+        notifier=notifier,
     )
 
     handler = ImageUploadedHandler(pipeline=pipeline)
@@ -47,12 +54,13 @@ async def main():
     except asyncio.CancelledError:
         pass
     finally:
+        await notifier.stop()
         await connection.close()
         logger.info("Worker stopped.")
 
 
 def run():
-    """Entry point for the CLI script defined in pyproject.toml"""
+    """Entry point for the CLI script defined in pyproject.toml."""
     try:
         asyncio.run(main())
     except KeyboardInterrupt:

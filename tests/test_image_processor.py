@@ -6,7 +6,7 @@ from src.services.digestion_pipeline import DigestionPipeline
 from src.core.processor import MediaPipeProcessorMock
 from src.infrastructure.storage.cdn import CDNStorageMock
 from src.infrastructure.database.mongo import MongoDBRepositoryMock
-from src.infrastructure.notifications.websocket import WebSocketNotifierMock
+from tests.support.mocks import WebSocketNotifierMock
 
 
 async def test_image_uploaded_handler_processes_event(caplog):

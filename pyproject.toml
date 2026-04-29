@@ -11,7 +11,10 @@ dependencies = [
     "mediapipe>=0.10.30",
     "aio-pika>=9.4.0",
     "pydantic>=2.7.0",
-    "pydantic-settings>=2.2.0"
+    "pydantic-settings>=2.2.0",
+    "python-socketio[asyncio_client]>=5.16.1",
+    "aiohttp>=3.13.5",
+    "python-jose[cryptography]>=3.5.0"
 ]
 
 [project.optional-dependencies]
