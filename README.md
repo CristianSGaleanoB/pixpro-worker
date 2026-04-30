@@ -62,12 +62,28 @@ source venv/bin/activate
 ### 3. Install the Dependencies
 Since our dependencies are explicitly declared in the `pyproject.toml`, you can install the project and its requirements natively with `pip`. 
 
-It is recommended to install it in "editable mode" (`-e`) during development:
+It is recommended to install it in "editable mode" (`-e`) with development dependencies during development:
 
 ```bash
-pip install -e .
+pip install -e ".[dev]"
 ```
 
-After this, MediaPipe and any other necessary dependencies will be ready to use
+After this, MediaPipe, Aio-pika, Pydantic, and any other necessary dependencies will be ready to use.
+
+### 4. Running the Worker
+
+The application provides a CLI entrypoint. Once installed, simply run:
+
+```bash
+digester-worker
+```
+
+### 5. Running Tests
+
+We use `pytest` for automated testing. To run the test suite:
+
+```bash
+pytest tests/
+```
 
 ---
