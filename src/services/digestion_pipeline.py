@@ -25,30 +25,60 @@ class DigestionPipeline:
 
     async def execute(self, event: ImageUploadedEvent) -> ImageProcessedEvent:
         """
-        Orchestrates the image digestion process.
+        Orchestrates the image digestion process, emitting progress
+        notifications at each stage.
         """
         try:
             await self.notifier.notify_status(
                 user_id=event.userId,
                 image_id=event.imageId,
-                status="PROCESSING_STARTED",
-                message="Your image has been picked up by a worker and is now processing.",
+                status="processing",
+                progress=0,
+                message="Your image has been picked up by a worker.",
             )
 
             logger.info(f"Downloading image {event.imageId} from {event.storagePath}")
+            await self.notifier.notify_status(
+                user_id=event.userId,
+                image_id=event.imageId,
+                status="processing",
+                progress=10,
+                message="Downloading image from storage...",
+            )
             raw_image_data = await self.storage.download_image(event.storagePath)
 
             logger.info("Starting MediaPipe processing pipeline...")
+            await self.notifier.notify_status(
+                user_id=event.userId,
+                image_id=event.imageId,
+                status="processing",
+                progress=50,
+                message="Applying AI enhancements...",
+            )
             processed_bytes, metadata = await self.processor.process_image(
                 raw_image_data=raw_image_data, options=event.processingOptions
             )
 
             logger.info("Uploading processed image to CDN...")
+            await self.notifier.notify_status(
+                user_id=event.userId,
+                image_id=event.imageId,
+                status="processing",
+                progress=75,
+                message="Uploading processed image...",
+            )
             result_url = await self.storage.upload_image(
                 image_id=event.imageId, image_data=processed_bytes
             )
 
             logger.info("Saving metadata to MongoDB...")
+            await self.notifier.notify_status(
+                user_id=event.userId,
+                image_id=event.imageId,
+                status="processing",
+                progress=90,
+                message="Saving metadata...",
+            )
             await self.database.save_image_metadata(
                 image_id=event.imageId,
                 project_id=event.projectId,
@@ -59,7 +89,8 @@ class DigestionPipeline:
             await self.notifier.notify_status(
                 user_id=event.userId,
                 image_id=event.imageId,
-                status="PROCESSING_COMPLETED",
+                status="complete",
+                progress=100,
                 message="Image processing completed successfully!",
             )
 
@@ -77,7 +108,8 @@ class DigestionPipeline:
             await self.notifier.notify_status(
                 user_id=event.userId,
                 image_id=event.imageId,
-                status="PROCESSING_FAILED",
+                status="failed",
+                progress=0,
                 message=f"An error occurred: {str(e)}",
             )
             raise e
