@@ -25,7 +25,11 @@ async def main():
     logger.info("Starting Digester Worker")
 
     # Infrastructure
-    connection = RabbitMQConnection(amqp_url=settings.amqp_url)
+    connection = RabbitMQConnection(
+        amqp_url=settings.amqp_url,
+        exchange=settings.exchange,
+        exchange_type=settings.exchange_type,
+    )
     await connection.connect()
 
     notifier = SocketIONotifier()
@@ -46,7 +50,10 @@ async def main():
     handler = ImageUploadedHandler(pipeline=pipeline)
 
     consumer = RabbitMQConsumer(
-        connection=connection, queue_name=settings.queue_name, strategy=handler
+        connection=connection,
+        queue_name=settings.queue_name,
+        routing_key=settings.routing_key,
+        strategy=handler,
     )
 
     try:
