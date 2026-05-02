@@ -41,7 +41,5 @@ async def test_image_uploaded_handler_processes_event(caplog):
     assert "Applying AI upscaling... (mock)" in caplog.text
     assert "Simulating CDN upload for image-789" in caplog.text
     assert "Successfully saved metadata to MongoDB" in caplog.text
-    assert (
-        "Simulating WebSocket emit to user user-456: [Image image-789] Status: PROCESSING_COMPLETED"
-        in caplog.text
-    )
+    assert "Status: processing (50%)" in caplog.text
+    assert "Status: complete (100%)" in caplog.text

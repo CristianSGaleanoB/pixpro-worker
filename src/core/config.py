@@ -4,7 +4,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     # RabbitMQ
     amqp_url: str = "amqp://guest:guest@localhost:5672/"
-    queue_name: str = "image_upload_events"
+    exchange: str = "pixpro.events"
+    exchange_type: str = "topic"
+    queue_name: str = "pixpro.image.uploaded"
+    routing_key: str = "image.uploaded"
 
     # SocketIO server
     socketio_host: str = "0.0.0.0"
