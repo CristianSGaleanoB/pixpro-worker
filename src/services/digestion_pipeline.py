@@ -11,6 +11,7 @@ from src.core.circuit_breaker import CircuitBreaker
 
 logger = logging.getLogger(__name__)
 
+
 class DigestionPipeline:
     def __init__(
         self,
@@ -50,7 +51,7 @@ class DigestionPipeline:
                 self.cdn_circuit.call,
                 self.storage.download_image,
                 event.storagePath,
-                max_retries=3
+                max_retries=3,
             )
 
             logger.info("Starting MediaPipe processing pipeline...")
@@ -78,7 +79,7 @@ class DigestionPipeline:
                 self.storage.upload_image,
                 image_id=event.imageId,
                 image_data=processed_bytes,
-                max_retries=3
+                max_retries=3,
             )
 
             logger.info("Saving metadata to MongoDB...")
@@ -96,7 +97,7 @@ class DigestionPipeline:
                 project_id=event.projectId,
                 result_url=result_url,
                 metadata=metadata,
-                max_retries=3
+                max_retries=3,
             )
 
             await self.notifier.notify_status(
