@@ -105,12 +105,22 @@ class SocketIONotifier(NotificationService):
     # NotificationService implementation
 
     async def notify_status(
-        self, user_id: str, image_id: str, status: str, message: str = ""
+        self,
+        user_id: str,
+        image_id: str,
+        status: str,
+        message: str = "",
+        progress: int | None = None,
     ) -> None:
         """
         Emits a ``pipeline_status`` event to the private room of *user_id*.
         """
-        payload = {"image_id": image_id, "status": status, "message": message}
+        payload = {
+            "image_id": image_id,
+            "status": status,
+            "message": message,
+            "progress": progress,
+        }
         await self._sio.emit("pipeline_status", payload, room=user_id)
         logger.info(
             "Emitted pipeline_status to user_id=%s image_id=%s status=%s",

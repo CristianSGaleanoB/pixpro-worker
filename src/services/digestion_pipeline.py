@@ -33,14 +33,31 @@ class DigestionPipeline:
                 image_id=event.imageId,
                 status="PROCESSING_STARTED",
                 message="Your image has been picked up by a worker and is now processing.",
+                progress=10,
             )
 
             logger.info(f"Downloading image {event.imageId} from {event.storagePath}")
             raw_image_data = await self.storage.download_image(event.storagePath)
+            
+            await self.notifier.notify_status(
+                user_id=event.userId,
+                image_id=event.imageId,
+                status="PROCESSING",
+                message="Image downloaded. Starting processing...",
+                progress=25,
+            )
 
             logger.info("Starting MediaPipe processing pipeline...")
             processed_bytes, metadata = await self.processor.process_image(
                 raw_image_data=raw_image_data, options=event.processingOptions
+            )
+            
+            await self.notifier.notify_status(
+                user_id=event.userId,
+                image_id=event.imageId,
+                status="PROCESSING",
+                message="Processing complete. Uploading results...",
+                progress=70,
             )
 
             logger.info("Uploading processed image to CDN...")
@@ -61,6 +78,7 @@ class DigestionPipeline:
                 image_id=event.imageId,
                 status="PROCESSING_COMPLETED",
                 message="Image processing completed successfully!",
+                progress=100,
             )
 
             return ImageProcessedEvent(

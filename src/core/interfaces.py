@@ -46,7 +46,12 @@ class DatabaseRepository(Protocol):
 
 class NotificationService(Protocol):
     async def notify_status(
-        self, user_id: str, image_id: str, status: str, message: str = ""
+        self,
+        user_id: str,
+        image_id: str,
+        status: str,
+        message: str = "",
+        progress: int | None = None,
     ) -> None:
         """
         Sends a real-time notification to the user via WebSockets.
