@@ -222,7 +222,7 @@ async def test_socketio_notify_status_delivered(notifier, real_token: str):
         await client.disconnect()
 
     assert event == "pipeline_status"
-    assert payload["taskId"] == "img-001"
+    assert payload["image_id"] == "img-001"
     assert payload["status"] == "complete"
     assert payload["progress"] == 100
     assert payload["message"] == "Done!"

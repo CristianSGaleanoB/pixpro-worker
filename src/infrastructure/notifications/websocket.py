@@ -116,7 +116,7 @@ class SocketIONotifier(NotificationService):
         Emits a ``pipeline_status`` event to the private room of *user_id*.
         """
         payload = {
-            "taskId": image_id,
+            "image_id": image_id,
             "status": status,
             "progress": progress,
             "message": message,
