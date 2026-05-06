@@ -7,7 +7,11 @@ import aio_pika
 
 @pytest.mark.asyncio
 async def test_rabbitmq_connection_success():
-    connection = RabbitMQConnection(amqp_url=settings.amqp_url)
+    connection = RabbitMQConnection(
+        amqp_url=settings.amqp_url,
+        exchange=settings.exchange,
+        exchange_type=settings.exchange_type,
+    )
     try:
         await asyncio.wait_for(connection.connect(), timeout=5.0)
 
@@ -15,6 +19,7 @@ async def test_rabbitmq_connection_success():
         assert not connection.connection.is_closed
         assert connection.channel is not None
         assert not connection.channel.is_closed
+        assert connection.exchange_obj is not None
 
     except (
         aio_pika.exceptions.AMQPConnectionError,

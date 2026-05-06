@@ -65,12 +65,14 @@ class KeycloakTokenValidator:
         except JWTError as exc:
             raise AuthError(f"Token validation failed: {exc}") from exc
 
-        # Verify the Authorized Party matches our client
+        # Verify the Authorized Party matches our allowed clients
         azp: str | None = payload.get("azp")
-        if azp != settings.keycloak_audience:
+        allowed_clients = set(settings.keycloak_allowed_clients.split(","))
+        
+        if azp not in allowed_clients:
             raise AuthError(
-                f"Token azp '{azp}' does not match expected client "
-                f"'{settings.keycloak_audience}'."
+                f"Token azp '{azp}' is not authorized. "
+                f"Expected one of {allowed_clients}."
             )
 
         user_id: str | None = payload.get("sub")

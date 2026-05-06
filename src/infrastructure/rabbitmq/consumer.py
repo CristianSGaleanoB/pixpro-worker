@@ -21,10 +21,12 @@ class RabbitMQConsumer:
         self,
         connection: RabbitMQConnection,
         queue_name: str,
+        routing_key: str,
         strategy: EventHandlerStrategy[BaseEvent],
     ):
         self.connection = connection
         self.queue_name = queue_name
+        self.routing_key = routing_key
         self.strategy = strategy
 
     async def _process_message(self, message: AbstractIncomingMessage) -> None:
@@ -67,6 +69,15 @@ class RabbitMQConsumer:
             self.queue_name, durable=True
         )
 
+        await queue.bind(
+            self.connection.exchange_obj,
+            self.routing_key,
+        )
+
+        logger.info(
+            f"Queue '{self.queue_name}' bound to exchange "
+            f"'{self.connection.exchange_name}' with routing key '{self.routing_key}'"
+        )
         logger.info(f"Started consuming from queue '{self.queue_name}'")
         await queue.consume(self._process_message)
 

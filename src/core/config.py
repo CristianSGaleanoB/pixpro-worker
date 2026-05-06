@@ -4,7 +4,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     # RabbitMQ
     amqp_url: str = "amqp://guest:guest@localhost:5672/"
-    queue_name: str = "image_upload_events"
+    exchange: str = "pixpro.events"
+    exchange_type: str = "topic"
+    queue_name: str = "pixpro.image.uploaded"
+    routing_key: str = "image.uploaded"
 
     # SocketIO server
     socketio_host: str = "0.0.0.0"
@@ -17,6 +20,7 @@ class Settings(BaseSettings):
     )
     keycloak_issuer: str = "http://localhost:8085/realms/pixpro-realm"
     keycloak_audience: str = "pixpro-backend-client"
+    keycloak_allowed_clients: str = "pixpro-backend-client,pixpro-frontend-client"
 
     # Only required for integration tests (ROPC grant)
     keycloak_client_secret: str | None = None

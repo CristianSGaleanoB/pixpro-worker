@@ -210,7 +210,8 @@ async def test_socketio_notify_status_delivered(notifier, real_token: str):
     await server.notify_status(
         user_id=user_id,
         image_id="img-001",
-        status="PROCESSING_COMPLETED",
+        status="complete",
+        progress=100,
         message="Done!",
     )
 
@@ -222,7 +223,8 @@ async def test_socketio_notify_status_delivered(notifier, real_token: str):
 
     assert event == "pipeline_status"
     assert payload["image_id"] == "img-001"
-    assert payload["status"] == "PROCESSING_COMPLETED"
+    assert payload["status"] == "complete"
+    assert payload["progress"] == 100
     assert payload["message"] == "Done!"
 
 
@@ -253,7 +255,8 @@ async def test_socketio_notify_status_not_delivered_to_other_user(
     await server.notify_status(
         user_id="other-user-00000000-0000-0000-0000-000000000000",
         image_id="img-999",
-        status="PROCESSING_STARTED",
+        status="processing",
+        progress=0,
         message="Should not arrive",
     )
 

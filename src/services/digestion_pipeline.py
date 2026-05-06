@@ -6,6 +6,8 @@ from src.core.interfaces import (
     DatabaseRepository,
     NotificationService,
 )
+from src.core.retry_utils import retry_with_backoff
+from src.core.circuit_breaker import CircuitBreaker
 
 logger = logging.getLogger(__name__)
 
@@ -22,44 +24,87 @@ class DigestionPipeline:
         self.storage = storage
         self.database = database
         self.notifier = notifier
+        self.cdn_circuit = CircuitBreaker(failure_threshold=5, recovery_timeout=30.0)
+        self.cdn_circuit._name = "CDN Circuit"
+        self.db_circuit = CircuitBreaker(failure_threshold=3, recovery_timeout=60.0)
+        self.db_circuit._name = "MongoDB Circuit"
 
     async def execute(self, event: ImageUploadedEvent) -> ImageProcessedEvent:
-        """
-        Orchestrates the image digestion process.
-        """
         try:
             await self.notifier.notify_status(
                 user_id=event.userId,
                 image_id=event.imageId,
-                status="PROCESSING_STARTED",
-                message="Your image has been picked up by a worker and is now processing.",
+                status="processing",
+                progress=0,
+                message="Your image has been picked up by a worker.",
             )
 
             logger.info(f"Downloading image {event.imageId} from {event.storagePath}")
-            raw_image_data = await self.storage.download_image(event.storagePath)
+            await self.notifier.notify_status(
+                user_id=event.userId,
+                image_id=event.imageId,
+                status="processing",
+                progress=10,
+                message="Downloading image from storage...",
+            )
+            raw_image_data = await retry_with_backoff(
+                self.cdn_circuit.call,
+                self.storage.download_image,
+                event.storagePath,
+                max_retries=3,
+            )
 
             logger.info("Starting MediaPipe processing pipeline...")
+            await self.notifier.notify_status(
+                user_id=event.userId,
+                image_id=event.imageId,
+                status="processing",
+                progress=50,
+                message="Applying AI enhancements...",
+            )
             processed_bytes, metadata = await self.processor.process_image(
                 raw_image_data=raw_image_data, options=event.processingOptions
             )
 
             logger.info("Uploading processed image to CDN...")
-            result_url = await self.storage.upload_image(
-                image_id=event.imageId, image_data=processed_bytes
+            await self.notifier.notify_status(
+                user_id=event.userId,
+                image_id=event.imageId,
+                status="processing",
+                progress=75,
+                message="Uploading processed image...",
+            )
+            result_url = await retry_with_backoff(
+                self.cdn_circuit.call,
+                self.storage.upload_image,
+                image_id=event.imageId,
+                image_data=processed_bytes,
+                max_retries=3,
             )
 
             logger.info("Saving metadata to MongoDB...")
-            await self.database.save_image_metadata(
+            await self.notifier.notify_status(
+                user_id=event.userId,
+                image_id=event.imageId,
+                status="processing",
+                progress=90,
+                message="Saving metadata...",
+            )
+            await retry_with_backoff(
+                self.db_circuit.call,
+                self.database.save_image_metadata,
                 image_id=event.imageId,
                 project_id=event.projectId,
                 result_url=result_url,
                 metadata=metadata,
+                max_retries=3,
             )
 
             await self.notifier.notify_status(
                 user_id=event.userId,
                 image_id=event.imageId,
-                status="PROCESSING_COMPLETED",
+                status="complete",
+                progress=100,
                 message="Image processing completed successfully!",
             )
 
@@ -73,11 +118,22 @@ class DigestionPipeline:
             )
 
         except Exception as e:
-            logger.exception(f"Pipeline failed for image {event.imageId}")
-            await self.notifier.notify_status(
-                user_id=event.userId,
-                image_id=event.imageId,
-                status="PROCESSING_FAILED",
-                message=f"An error occurred: {str(e)}",
-            )
+            if "is OPEN" in str(e):
+                logger.error(f"Circuit breaker open: {e}")
+                await self.notifier.notify_status(
+                    user_id=event.userId,
+                    image_id=event.imageId,
+                    status="failed",
+                    progress=0,
+                    message="Service temporarily unavailable. Please try again later.",
+                )
+            else:
+                logger.exception(f"Pipeline failed for image {event.imageId}")
+                await self.notifier.notify_status(
+                    user_id=event.userId,
+                    image_id=event.imageId,
+                    status="failed",
+                    progress=0,
+                    message=f"An error occurred: {str(e)}",
+                )
             raise e

@@ -17,13 +17,14 @@ class WebSocketNotifierMock(NotificationService):
     """In-memory mock that simulates a WebSocket notifier without any I/O."""
 
     async def notify_status(
-        self, user_id: str, image_id: str, status: str, message: str = ""
+        self, user_id: str, image_id: str, status: str, progress: int = 0, message: str = ""
     ) -> None:
         logger.info(
-            "Simulating WebSocket emit to user %s: [Image %s] Status: %s - %s",
+            "Simulating WebSocket emit to user %s: [Image %s] Status: %s (%d%%) - %s",
             user_id,
             image_id,
             status,
+            progress,
             message,
         )
         await asyncio.sleep(0.05)
