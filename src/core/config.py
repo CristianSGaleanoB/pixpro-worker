@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     )
     keycloak_issuer: str = "http://localhost:8085/realms/pixpro-realm"
     keycloak_audience: str = "pixpro-backend-client"
+    keycloak_allowed_clients: str = "pixpro-backend-client,pixpro-frontend-client"
 
     # Only required for integration tests (ROPC grant)
     keycloak_client_secret: str | None = None
