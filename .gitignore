@@ -3,13 +3,26 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# C extensions
+*.so
+
 # Virtual Environments
 venv/
+.venv/
 env/
 ENV/
+.env_dir/
 
-# Pytest
+# Pytest / Coverage / Testing
 .pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
 
 # Distribution / packaging
 build/
@@ -27,12 +40,35 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# IDEs
+# Type Checking
+.mypy_cache/
+.pyre/
+.typecheck_cache/
+
+# IDEs and Editors
 .vscode/
 .idea/
 *.swp
+*.swo
+*~
+.spyderproject
+.ropeproject
 
 # Environment variables
 .env
 .env.local
+.env.development
+.env.test
+.env.production
+*.env
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
