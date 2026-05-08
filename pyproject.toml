@@ -14,7 +14,8 @@ dependencies = [
     "pydantic-settings>=2.2.0",
     "python-socketio[asyncio_client]>=5.16.1",
     "aiohttp>=3.13.5",
-    "python-jose[cryptography]>=3.5.0"
+    "python-jose[cryptography]>=3.5.0",
+    "cloudinary>=1.44.2"
 ]
 
 [project.optional-dependencies]
