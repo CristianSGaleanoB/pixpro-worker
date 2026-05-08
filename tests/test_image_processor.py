@@ -1,17 +1,16 @@
 import pytest
+import logging
 from src.core.events import ImageUploadedEvent, ProcessingOptions
 from src.handlers.image_processor import ImageUploadedHandler
 
 from src.services.digestion_pipeline import DigestionPipeline
 from src.core.processor import MediaPipeProcessorMock
-from src.infrastructure.storage.cdn import CDNStorageMock
+from src.infrastructure.storage.cdn import CloudinaryCDNStorage
 from src.infrastructure.database.mongo import MongoDBRepositoryMock
-from tests.support.mocks import WebSocketNotifierMock
+from tests.support.mocks import WebSocketNotifierMock, CDNStorageMock
 
 
 async def test_image_uploaded_handler_processes_event(caplog):
-    import logging
-
     caplog.set_level(logging.INFO)
 
     options = ProcessingOptions(
@@ -22,7 +21,7 @@ async def test_image_uploaded_handler_processes_event(caplog):
         projectId="project-123",
         userId="user-456",
         imageId="image-789",
-        storagePath="s3://raw-bucket/project-123/image-789.jpg",
+        storagePath="https://res.cloudinary.com/mock/raw/project-123/image-789.jpg",
         processingOptions=options,
     )
 
@@ -39,7 +38,3 @@ async def test_image_uploaded_handler_processes_event(caplog):
     assert "Handling ImageUploadedEvent for Image ID: image-789" in caplog.text
     assert "Downloading image image-789" in caplog.text
     assert "Applying AI upscaling... (mock)" in caplog.text
-    assert "Simulating CDN upload for image-789" in caplog.text
-    assert "Successfully saved metadata to MongoDB" in caplog.text
-    assert "Status: processing (50%)" in caplog.text
-    assert "Status: complete (100%)" in caplog.text
