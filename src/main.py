@@ -7,11 +7,10 @@ from src.infrastructure.rabbitmq.consumer import RabbitMQConsumer
 from src.handlers.image_processor import ImageUploadedHandler
 from src.services.digestion_pipeline import DigestionPipeline
 from src.core.processor import MediaPipeProcessorMock
-from src.infrastructure.storage.cdn import CloudinaryCDNStorage
+from src.infrastructure.storage.mock import MockCDNStorage
 from src.infrastructure.database.mongo import MongoDBRepositoryMock
 from src.infrastructure.notifications.websocket import SocketIONotifier
 from src.core.config import settings
-from src.infrastructure.storage.cdn import CloudinaryCDNStorage
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,7 +36,7 @@ async def main():
     await notifier.start()
 
     processor = MediaPipeProcessorMock()
-    storage = CloudinaryCDNStorage()
+    storage = MockCDNStorage()
     database = MongoDBRepositoryMock()
 
     # Domain pipeline

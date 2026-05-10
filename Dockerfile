@@ -11,7 +11,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 FROM base AS development
 
-CMD ["python", "-m", "src.main"]
+CMD ["watchfiles", "python -m src.main", "src"]
 
 FROM python:3.12-slim AS production
 
