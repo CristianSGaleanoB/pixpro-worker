@@ -13,7 +13,6 @@ from src.infrastructure.notifications.websocket import SocketIONotifier
 from src.core.config import settings
 from src.infrastructure.storage.cdn import CloudinaryCDNStorage
 
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",

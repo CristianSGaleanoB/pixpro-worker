@@ -68,7 +68,7 @@ class KeycloakTokenValidator:
         # Verify the Authorized Party matches our allowed clients
         azp: str | None = payload.get("azp")
         allowed_clients = set(settings.keycloak_allowed_clients.split(","))
-        
+
         if azp not in allowed_clients:
             raise AuthError(
                 f"Token azp '{azp}' is not authorized. "

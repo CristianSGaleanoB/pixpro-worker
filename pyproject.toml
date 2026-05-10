@@ -8,22 +8,23 @@ version = "0.1.0"
 description = "Worker service for processing images with MediaPipe"
 requires-python = ">=3.12"
 dependencies = [
-    "mediapipe>=0.10.30",
-    "aio-pika>=9.4.0",
-    "pydantic>=2.7.0",
-    "pydantic-settings>=2.2.0",
-    "python-socketio[asyncio_client]>=5.16.1",
-    "aiohttp>=3.13.5",
-    "python-jose[cryptography]>=3.5.0",
-    "cloudinary>=1.44.2"
+  "mediapipe>=0.10.30",
+  "aio-pika>=9.4.0",
+  "pydantic>=2.7.0",
+  "pydantic-settings>=2.2.0",
+  "python-socketio[asyncio_client]>=5.16.1",
+  "aiohttp>=3.13.5",
+  "python-jose[cryptography]>=3.5.0",
+  "cloudinary>=1.44.2",
+  "httpx>=0.28.1",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0.0",
-    "pytest-asyncio>=0.23.0",
-    "black>=24.0.0",
-    "mypy>=1.10.0"
+  "pytest>=8.0.0",
+  "pytest-asyncio>=0.23.0",
+  "black>=24.0.0",
+  "mypy>=1.10.0",
 ]
 
 [project.scripts]

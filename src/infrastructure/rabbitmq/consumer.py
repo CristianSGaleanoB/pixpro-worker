@@ -71,8 +71,10 @@ class RabbitMQConsumer:
             self.queue_name, durable=True
         )
 
+        exchange = self.connection.exchange_obj
+        assert exchange is not None, "Exchange not declared — call connect() first"
         await queue.bind(
-            self.connection.exchange_obj,
+            exchange,
             self.routing_key,
         )
 
