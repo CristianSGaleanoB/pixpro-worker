@@ -17,7 +17,12 @@ class WebSocketNotifierMock(NotificationService):
     """In-memory mock that simulates a WebSocket notifier without any I/O."""
 
     async def notify_status(
-        self, user_id: str, image_id: str, status: str, progress: int = 0, message: str = ""
+        self,
+        user_id: str,
+        image_id: str,
+        status: str,
+        progress: int = 0,
+        message: str = "",
     ) -> None:
         logger.info(
             "Simulating WebSocket emit to user %s: [Image %s] Status: %s (%d%%) - %s",
@@ -32,11 +37,11 @@ class WebSocketNotifierMock(NotificationService):
 
 class CDNStorageMock(StorageService):
     """
-    CDN mock for unit tests. 
+    CDN mock for unit tests.
     Does not make real calls to Cloudinary.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.uploaded: list[dict] = []
         self.downloaded: list[str] = []
 

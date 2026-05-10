@@ -27,11 +27,12 @@ def mock_event():
 
 @pytest.fixture
 def pipeline():
-    # Mock Processor that simulates processing without real AI logic, returning dummy 
+    # Mock Processor that simulates processing without real AI logic, returning dummy
     # processed data and metadata
     processor_mock = AsyncMock()
     from src.core.events import ProcessingMetadata
     from datetime import datetime, timezone
+
     processor_mock.process_image.return_value = (
         b"processed-image-data",
         ProcessingMetadata(
