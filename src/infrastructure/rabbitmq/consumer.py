@@ -55,8 +55,10 @@ class RabbitMQConsumer:
                 )
                 await message.reject(requeue=False)
             except Exception as e:
-                logger.exception(f"Unexpected error processing message: {e}")
-                await message.nack(requeue=True)
+                logger.error(
+                    f"Error processing message: {e}. Rejecting permanently as internal retries have been exhausted."
+                )
+                await message.reject(requeue=False)
 
     async def start_consuming(self) -> None:
         """Starts consuming from the queue using the provided strategy."""
@@ -69,8 +71,10 @@ class RabbitMQConsumer:
             self.queue_name, durable=True
         )
 
+        exchange = self.connection.exchange_obj
+        assert exchange is not None, "Exchange not declared — call connect() first"
         await queue.bind(
-            self.connection.exchange_obj,
+            exchange,
             self.routing_key,
         )
 

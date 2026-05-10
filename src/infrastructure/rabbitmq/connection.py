@@ -3,7 +3,7 @@ import aio_pika
 from aio_pika.abc import (
     AbstractRobustConnection,
     AbstractChannel,
-    AbstractRobustExchange,
+    AbstractExchange,
     ExchangeType,
 )
 from typing import Optional
@@ -23,7 +23,7 @@ class RabbitMQConnection:
         self.exchange_type = exchange_type
         self.connection: Optional[AbstractRobustConnection] = None
         self.channel: Optional[AbstractChannel] = None
-        self.exchange_obj: Optional[AbstractRobustExchange] = None
+        self.exchange_obj: Optional[AbstractExchange] = None
 
     async def connect(self) -> None:
         if not self.connection or self.connection.is_closed:
@@ -37,7 +37,7 @@ class RabbitMQConnection:
                 durable=True,
             )
             logger.info(
-                f"Exchange declared: \"{self.exchange_name}\" ({self.exchange_type})"
+                f'Exchange declared: "{self.exchange_name}" ({self.exchange_type})'
             )
             logger.info("Successfully connected to RabbitMQ")
 

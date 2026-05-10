@@ -4,6 +4,7 @@ from typing import Callable, Any, Type, Tuple
 
 logger = logging.getLogger(__name__)
 
+
 async def retry_with_backoff(
     func: Callable,
     *args,
@@ -11,7 +12,7 @@ async def retry_with_backoff(
     initial_backoff: float = 1.0,
     max_backoff: float = 30.0,
     exceptions: Tuple[Type[Exception], ...] = (Exception,),
-    **kwargs
+    **kwargs,
 ) -> Any:
     last_exception = None
 
@@ -25,7 +26,7 @@ async def retry_with_backoff(
                 logger.error(f"Max retries ({max_retries}) exhausted. Last error: {e}")
                 raise e
 
-            backoff = min(initial_backoff * (2 ** attempt), max_backoff)
+            backoff = min(initial_backoff * (2**attempt), max_backoff)
 
             logger.warning(
                 f"Attempt {attempt + 1}/{max_retries} failed: {e}. "
