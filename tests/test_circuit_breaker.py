@@ -3,6 +3,7 @@ import time
 import asyncio
 from src.core.circuit_breaker import CircuitBreaker
 
+
 @pytest.mark.asyncio
 async def test_circuit_opens_after_threshold():
     cb = CircuitBreaker(failure_threshold=3, recovery_timeout=1.0)
@@ -20,6 +21,7 @@ async def test_circuit_opens_after_threshold():
 
     with pytest.raises(Exception, match="is OPEN"):
         await cb.call(always_fails)
+
 
 @pytest.mark.asyncio
 async def test_circuit_recovers_after_timeout():

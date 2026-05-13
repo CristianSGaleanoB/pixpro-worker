@@ -36,6 +36,6 @@ class MediaPipeProcessorMock(ImageProcessingService):
 
         metadata = ProcessingMetadata(durationMs=2000, appliedOptions=applied)
 
-        processed_bytes = b"MOCK_PROCESSED_IMAGE_BYTES"
+        processed_bytes = raw_image_data
 
         return processed_bytes, metadata

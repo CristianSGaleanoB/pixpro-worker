@@ -2,6 +2,7 @@ import pytest
 import asyncio
 from src.core.retry_utils import retry_with_backoff
 
+
 @pytest.mark.asyncio
 async def test_retry_succeeds_on_second_attempt():
     call_count = 0
@@ -17,6 +18,7 @@ async def test_retry_succeeds_on_second_attempt():
 
     assert result == "success"
     assert call_count == 2
+
 
 @pytest.mark.asyncio
 async def test_retry_exhausts_max_retries():
