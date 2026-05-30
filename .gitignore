@@ -64,6 +64,9 @@ MANIFEST
 .env.production
 *.env
 
+# Logs
+logs/
+
 # OS generated files
 .DS_Store
 .DS_Store?

@@ -8,8 +8,9 @@ from src.core.interfaces import (
 )
 from src.core.retry_utils import retry_with_backoff
 from src.core.circuit_breaker import CircuitBreaker
+from src.core.correlation_logger import CorrelationLogger
 
-logger = logging.getLogger(__name__)
+logger = CorrelationLogger(__name__)
 
 
 class DigestionPipeline:
@@ -30,6 +31,7 @@ class DigestionPipeline:
         self.db_circuit._name = "MongoDB Circuit"
 
     async def execute(self, event: ImageUploadedEvent) -> ImageProcessedEvent:
+        cid = event.correlationId
         try:
             await self.notifier.notify_status(
                 user_id=event.userId,
@@ -39,7 +41,7 @@ class DigestionPipeline:
                 message="Your image has been picked up by a worker.",
             )
 
-            logger.info(f"Downloading image {event.imageId} from {event.storagePath}")
+            logger.info(f"Downloading image {event.imageId} from {event.storagePath}", cid)
             await self.notifier.notify_status(
                 user_id=event.userId,
                 image_id=event.imageId,
@@ -54,7 +56,7 @@ class DigestionPipeline:
                 max_retries=3,
             )
 
-            logger.info("Starting MediaPipe processing pipeline...")
+            logger.info("Starting MediaPipe processing pipeline...", cid)
             await self.notifier.notify_status(
                 user_id=event.userId,
                 image_id=event.imageId,
@@ -66,7 +68,7 @@ class DigestionPipeline:
                 raw_image_data=raw_image_data, options=event.processingOptions
             )
 
-            logger.info("Uploading processed image to CDN...")
+            logger.info("Uploading processed image to CDN...", cid)
             await self.notifier.notify_status(
                 user_id=event.userId,
                 image_id=event.imageId,
@@ -82,7 +84,7 @@ class DigestionPipeline:
                 max_retries=3,
             )
 
-            logger.info("Saving metadata to MongoDB...")
+            logger.info("Saving metadata to MongoDB...", cid)
             await self.notifier.notify_status(
                 user_id=event.userId,
                 image_id=event.imageId,
@@ -119,7 +121,7 @@ class DigestionPipeline:
 
         except Exception as e:
             if "is OPEN" in str(e):
-                logger.error(f"Circuit breaker open: {e}")
+                logger.error(f"Circuit breaker open: {e}", cid)
                 await self.notifier.notify_status(
                     user_id=event.userId,
                     image_id=event.imageId,
@@ -128,7 +130,7 @@ class DigestionPipeline:
                     message="Service temporarily unavailable. Please try again later.",
                 )
             else:
-                logger.exception(f"Pipeline failed for image {event.imageId}")
+                logger.exception(f"Pipeline failed for image {event.imageId}", cid)
                 await self.notifier.notify_status(
                     user_id=event.userId,
                     image_id=event.imageId,

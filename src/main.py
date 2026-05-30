@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import sys
+import os
 
 from src.infrastructure.rabbitmq.connection import RabbitMQConnection
 from src.infrastructure.rabbitmq.consumer import RabbitMQConsumer
@@ -12,10 +13,15 @@ from src.infrastructure.database.mongo import MongoDBRepositoryMock
 from src.infrastructure.notifications.websocket import SocketIONotifier
 from src.core.config import settings
 
+os.makedirs("logs", exist_ok=True)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)],
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("logs/worker.log"),
+    ],
 )
 
 logger = logging.getLogger(__name__)

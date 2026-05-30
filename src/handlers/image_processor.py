@@ -4,11 +4,12 @@ from typing import TYPE_CHECKING
 from src.core.events import ImageUploadedEvent
 from src.infrastructure.messaging.base import EventHandlerStrategy
 from src.services.digestion_pipeline import DigestionPipeline
+from src.core.correlation_logger import CorrelationLogger
 
 if TYPE_CHECKING:
     from typing import Type
 
-logger = logging.getLogger(__name__)
+logger = CorrelationLogger(__name__)
 
 
 class ImageUploadedHandler(EventHandlerStrategy[ImageUploadedEvent]):
@@ -20,9 +21,9 @@ class ImageUploadedHandler(EventHandlerStrategy[ImageUploadedEvent]):
         return ImageUploadedEvent
 
     async def handle(self, event: ImageUploadedEvent) -> None:
-        logger.info(f"Handling ImageUploadedEvent for Image ID: {event.imageId}")
+        cid = event.correlationId
+        logger.info(f"Handling ImageUploadedEvent for Image ID: {event.imageId}", cid)
 
         processed_event = await self.pipeline.execute(event)
 
-        logger.info("Pipeline execution complete. Resulting event:")
-        logger.info(processed_event.model_dump_json(indent=2))
+        logger.info("Pipeline execution complete", cid)
